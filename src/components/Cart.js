@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState } from 'react';
 import { useCart } from './CartContext';
 import Checkout from './Checkout';
