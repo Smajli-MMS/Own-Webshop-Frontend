@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 const CartContext = createContext();
 
@@ -178,16 +178,9 @@ export function CartProvider({ children }) {
         
         // Hier könntest du die Bestellung an dein Backend senden
         try {
-            // Beispiel für Backend-Call:
-            // const response = await fetch('/api/orders', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({
-            //         ...orderData,
-            //         items: cartItems
-            //     })
-            // });
-            
+            // The current OpenAPI contract has no order endpoint.
+            // Keep this local simulation until an Orders API is specified/generated.
+
             // Simuliere erfolgreiche Bestellung
             const orderId = 'ORDER-' + Date.now();
             
