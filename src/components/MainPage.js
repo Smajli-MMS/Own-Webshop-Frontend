@@ -4,23 +4,7 @@ import { getProductDetails } from './productDetailsModal';
 import StockService from './StockService';
 import { apiConfiguration, productsApi, marketsApi } from '../api';
 
-// Alle Marken-Bilder importieren
-import iphoneImg from '../images/iphone.jpg';
-import samsungImg from '../images/samsung.jpg';
-import sonyImg from '../images/sony.jpg';
-import xiaomiImg from '../images/xiaomi.jpg';
-import oneplusImg from '../images/oneplus.jpg';
-import nintendoImg from '../images/nintendo.jpg';
-import dellImg from '../images/dell.jpg';
-import hpImg from '../images/hp.jpg';
-import mieleImg from '../images/miele.jpg';
-import lgImg from '../images/lg.jpg';
-import logitechImg from '../images/logitech.jpg';
-import nokiaImg from '../images/nokia.jpg';
-import boschImg from '../images/bosch.jpg';
-import playstationImg from '../images/playstation.jpg';
-import xboxImg from '../images/xbox.jpg';
-import macbookImg from '../images/macbook.jpg';
+import { getProductImage, handleProductImageError } from '../utils/productImages';
 
 function MainPage() {
     const [products, setProducts] = useState([]);
@@ -67,48 +51,6 @@ function MainPage() {
     useEffect(() => {
         loadProducts();
     }, []);
-
-    function getProductImage(productGroupId, productName) {
-        const name = productName.toLowerCase();
-        
-        // SMARTPHONES (Kategorie 1)
-        if (productGroupId === 1) {
-            if (name.includes('iphone')) return iphoneImg;
-            if (name.includes('samsung')) return samsungImg;
-            if (name.includes('xiaomi') || name.includes('mi 13')) return xiaomiImg;
-            if (name.includes('oneplus')) return oneplusImg;
-            if (name.includes('nokia')) return nokiaImg;
-            return 'https://via.placeholder.com/200x200/17a2b8/ffffff?text=Phone';
-        }
-        
-        // GAMING (Kategorie 2)
-        if (productGroupId === 2) {
-            if (name.includes('sony') || name.includes('wh-1000xm4')) return sonyImg;
-            if (name.includes('playstation')) return playstationImg;
-            if (name.includes('xbox')) return xboxImg;
-            if (name.includes('nintendo') || name.includes('switch')) return nintendoImg;
-            if (name.includes('logitech') || name.includes('gaming mouse')) return logitechImg;
-            return 'https://via.placeholder.com/200x200/dc3545/ffffff?text=Gaming';
-        }
-        
-        // PCS (Kategorie 3)
-        if (productGroupId === 3) {
-            if (name.includes('macbook')) return macbookImg;
-            if (name.includes('dell') || name.includes('xps')) return dellImg;
-            if (name.includes('hp') || name.includes('pavilion') || name.includes('elitebook')) return hpImg;
-            return 'https://via.placeholder.com/200x200/fd7e14/ffffff?text=PC';
-        }
-        
-        // WASCHMASCHINEN (Kategorie 4)
-        if (productGroupId === 4) {
-            if (name.includes('miele')) return mieleImg;
-            if (name.includes('lg') || name.includes('front load')) return lgImg;
-            if (name.includes('bosch')) return boschImg;
-            return 'https://via.placeholder.com/200x200/20c997/ffffff?text=Waschmaschine';
-        }
-        
-        return 'https://via.placeholder.com/200x200/6c757d/ffffff?text=Produkt';
-    }
 
     async function handleAddToCart(product) {
         try {
@@ -166,7 +108,14 @@ function MainPage() {
 
     // Detail-Modal Komponente
     function ProductDetailModal({ product, onClose }) {
-        const details = getProductDetails(product);
+        const details = getProductDetails(product) || {
+            description: product.name,
+            features: [],
+            specifications: {},
+            rating: 'Nicht angegeben',
+            warranty: 'Nicht angegeben',
+            delivery: 'Nicht angegeben'
+        };
         
         return (
             <div style={{
@@ -226,8 +175,9 @@ function MainPage() {
                             flexWrap: 'wrap'
                         }}>
                             <img 
-                                src={getProductImage(product.productGroupId, product.name)}
+                                src={getProductImage(product)}
                                 alt={product.name}
+                                onError={handleProductImageError}
                                 style={{
                                     width: '300px',
                                     height: '300px',
@@ -590,7 +540,7 @@ function MainPage() {
                                 }}
                             >
                                 <img 
-                                    src={getProductImage(product.productGroupId, product.name)}
+                                    src={getProductImage(product)}
                                     alt={product.name}
                                     style={{
                                         width: '180px',
@@ -599,9 +549,7 @@ function MainPage() {
                                         objectFit: 'scale-down',
                                         marginBottom: '15px'
                                     }}
-                                    onError={(e) => {
-                                        e.target.src = 'https://via.placeholder.com/200x200/6c757d/ffffff?text=Kein+Bild';
-                                    }}
+                                    onError={handleProductImageError}
                                 />
                                 
                                 <div style={{width: '100%'}}>
