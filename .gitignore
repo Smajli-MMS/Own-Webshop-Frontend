@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# OpenAPI Generator bookkeeping
+/src/generated/.openapi-generator/
+/src/generated/.openapi-generator-ignore

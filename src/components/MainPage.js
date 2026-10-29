@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
 import { getProductDetails } from './productDetailsModal';
 import StockService from './StockService';
+import { productsApi, marketsApi } from '../api';
 
 // Alle Marken-Bilder importieren
 import iphoneImg from '../images/iphone.jpg';
@@ -32,10 +33,8 @@ function MainPage() {
     async function loadProducts() {
     try {
         console.log('=== LADE PRODUKTE MIT STOCK ===');
-        const response = await fetch('http://localhost:8081/api/products/with-stock');
-        const data = await response.json();
+        const data = await productsApi.getAllProductsWithStock();
         
-        console.log('Response Status:', response.status);
         console.log('Anzahl Produkte:', data.length);
         console.log('Erstes Produkt komplett:', JSON.stringify(data[0], null, 2));
         
@@ -321,8 +320,9 @@ function MainPage() {
         useEffect(() => {
             async function loadMarketAvailability() {
                 try {
-                    const response = await fetch(`http://localhost:8081/api/markets/products/${product.productId}`);
-                    const data = await response.json();
+                    const data = await marketsApi.getProductStockInAllMarkets({
+                        productId: product.productId
+                    });
                     console.log('Marktdaten geladen:', data);
                     setMarketData(data);
                     setLoadingMarkets(false);

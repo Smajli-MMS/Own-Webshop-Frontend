@@ -1,70 +1,80 @@
-# Getting Started with Create React App
+# Webshop-Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Backend konfigurieren (.env)
 
-## Available Scripts
+Das Projekt verwendet Create React App. Im Projektverzeichnis liegt `.env`:
 
-In the project directory, you can run:
+```dotenv
+REACT_APP_API_URL=http://localhost:8080
+```
 
-### `npm start`
+Der Wert ist die Backend-Adresse **ohne** `/api` am Ende. Die generierten Clients
+fügen die in der Spezifikation definierten Pfade selbst an.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Für eine persönliche Abweichung eine `.env.local` anlegen (wird von Git ignoriert).
+Wenn dein Backend wie bisher auf Port 8081 läuft:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```dotenv
+REACT_APP_API_URL=http://localhost:8081
+```
 
-### `npm test`
+Nach einer Änderung den Entwicklungsserver stoppen und `npm start` neu ausführen.
+Für ein Deployment wird die Variable beim Build eingesetzt; danach ist ein neuer
+Build nötig. `REACT_APP_*`-Werte sind im Browser sichtbar, daher hier keine
+Passwörter oder privaten Schlüssel speichern. Es ist kein zusätzliches `dotenv`
+Paket nötig, Create React App lädt diese Dateien selbst.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Starten und prüfen
 
-### `npm run build`
+```sh
+npm ci
+npm start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```sh
+npm run typecheck
+npm test -- --watchAll=false
+npm run build
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## OpenAPI-Clients generieren
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+`openapi/azubi-api-v1-spec.yaml` ist die Kopie des Backend-Vertrags aus
+`Smajli-MMS/Azubi-Projekt`, Pfad
+`azubi-api/src/main/resources/api/provider/azubi-api-v1-spec.yaml`.
 
-### `npm run eject`
+Nach einer Vertragsänderung die YAML erneut aus dem Backend übernehmen und dann:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```sh
+npm run generate:api
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Zur Generierung wird Java 11 oder neuer benötigt (deine Backend-JDK genügt).
+Generator-Version 7.12.0 und Optionen sind in `openapitools.json` festgelegt.
+Die generierten TypeScript-Clients und Modell-Interfaces in `src/generated`
+sind eingecheckt: zum Starten/Build ist daher keine lokale Java-Installation und
+keine vorherige Generierung erforderlich. Generierte Dateien nicht manuell ändern;
+stattdessen Spezifikation/Generator-Konfiguration anpassen und neu generieren.
+Die React-Komponenten bleiben JavaScript, Create React App verarbeitet die
+generierten TypeScript-Dateien mit.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+`src/api/index.js` erzeugt eine gemeinsame `Configuration` und die Instanzen
+`productsApi`, `marketsApi` und `stockApi`. Beispiel:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```js
+import { productsApi, marketsApi } from './api';
 
-## Learn More
+const products = await productsApi.getAllProductsWithStock();
+const availability = await marketsApi.getProductStockInAllMarkets({ productId: 1 });
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Diese Methoden liefern bereits die deserialisierten Daten, ein zusätzliches
+`response.json()` entfällt. Nicht erfolgreiche HTTP-Antworten werfen einen Fehler.
+`StockService` delegiert an den generierten `StockApi`-Client, damit die vorhandenen
+Warenkorb- und Bestandskomponenten ihre Service-Schnittstelle weiter nutzen können.
+Der Bestellabschluss bleibt wie bisher eine lokale Simulation, da der
+Backend-Vertrag keinen Bestell-Endpunkt enthält.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Dokumentation:
+- https://create-react-app.dev/docs/adding-custom-environment-variables/
+- https://openapi-generator.tech/docs/generators/typescript-fetch/
