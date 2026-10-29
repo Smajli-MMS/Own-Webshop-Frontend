@@ -83,7 +83,7 @@ test('configuration uses the environment URL and removes trailing slashes', () =
 test('configuration falls back to the requested localhost port', () => {
     delete process.env.REACT_APP_API_URL;
     jest.isolateModules(() => {
-        expect(require('./index').apiConfiguration.basePath).toBe('http://localhost:8080');
+        expect(require('./index').apiConfiguration.basePath).toBe('http://localhost:8081');
     });
 });
 

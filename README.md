@@ -5,17 +5,18 @@
 Das Projekt verwendet Create React App. Im Projektverzeichnis liegt `.env`:
 
 ```dotenv
-REACT_APP_API_URL=http://localhost:8080
+REACT_APP_API_URL=http://localhost:8081
 ```
 
 Der Wert ist die Backend-Adresse **ohne** `/api` am Ende. Die generierten Clients
 fügen die in der Spezifikation definierten Pfade selbst an.
 
 Für eine persönliche Abweichung eine `.env.local` anlegen (wird von Git ignoriert).
-Wenn dein Backend wie bisher auf Port 8081 läuft:
+Der Standard passt zu `server.port=8081` im Backend.
+Falls du das Backend auf Port 8080 umstellst, verwende:
 
 ```dotenv
-REACT_APP_API_URL=http://localhost:8081
+REACT_APP_API_URL=http://localhost:8080
 ```
 
 Nach einer Änderung den Entwicklungsserver stoppen und `npm start` neu ausführen.
@@ -78,3 +79,21 @@ Backend-Vertrag keinen Bestell-Endpunkt enthält.
 Dokumentation:
 - https://create-react-app.dev/docs/adding-custom-environment-variables/
 - https://openapi-generator.tech/docs/generators/typescript-fetch/
+
+## Verbindung prüfen
+
+1. PostgreSQL und danach `RelinApplication` starten. In der Startausgabe muss
+   `Tomcat started on port 8081` erscheinen.
+2. `http://localhost:8081/api/products/with-stock` im Browser öffnen. Dort muss
+   eine JSON-Liste der Datenbankprodukte erscheinen. Eine leere Liste bedeutet,
+   dass die aktive Backend-Datenbank keine Produkte liefert; ein HTTP-Fehler muss
+   anhand des Backend-Logs behoben werden.
+3. Frontend mit `npm start` starten und `http://localhost:3000/produkte` öffnen.
+   Die Startseite `/` zeigt Werbebanner; die Produktliste liegt unter `/produkte`.
+4. Bei Verbindungsfehlern zeigt die Produktseite eine Fehlermeldung mit einer
+   Wiederholungsmöglichkeit. Details stehen in der Browser-Konsole.
+
+Eine vorhandene `.env.local` überschreibt `.env`. Prüfe sie daher ebenfalls auf
+Port 8081 und starte den Frontend-Server nach Änderungen neu. Beide Prozesse
+müssen gleichzeitig laufen. Flyway befüllt die Datenbank beim Backend-Start;
+der generierte Client liest diese Daten über `/api/products/with-stock`.

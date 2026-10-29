@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
 import { getProductDetails } from './productDetailsModal';
 import StockService from './StockService';
-import { productsApi, marketsApi } from '../api';
+import { apiConfiguration, productsApi, marketsApi } from '../api';
 
 // Alle Marken-Bilder importieren
 import iphoneImg from '../images/iphone.jpg';
@@ -25,12 +25,15 @@ import macbookImg from '../images/macbook.jpg';
 function MainPage() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [productsError, setProductsError] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showMarketModal, setShowMarketModal] = useState(false);
     const [selectedProductForMarkets, setSelectedProductForMarkets] = useState(null);
     const { addToCart, loadStockData } = useCart();
 
     async function loadProducts() {
+    setLoading(true);
+    setProductsError(null);
     try {
         console.log('=== LADE PRODUKTE MIT STOCK ===');
         const data = await productsApi.getAllProductsWithStock();
@@ -52,7 +55,10 @@ function MainPage() {
         setProducts(data);
         setLoading(false);
     } catch (error) {
-        console.error('Fehler beim Laden:', error);
+        console.error('Fehler beim Laden der Produkte von', apiConfiguration.basePath, error);
+        setProductsError('Die Produkte konnten nicht geladen werden. Bitte versuche es erneut.');
+        setProducts([]);
+    } finally {
         setLoading(false);
     }
 }
@@ -316,6 +322,7 @@ function MainPage() {
     function MarketAvailabilityModal({ product, onClose }) {
         const [marketData, setMarketData] = useState(null);
         const [loadingMarkets, setLoadingMarkets] = useState(true);
+        const [marketError, setMarketError] = useState(null);
 
         useEffect(() => {
             async function loadMarketAvailability() {
@@ -328,6 +335,7 @@ function MainPage() {
                     setLoadingMarkets(false);
                 } catch (error) {
                     console.error('Fehler beim Laden der Marktdaten:', error);
+                    setMarketError('Die Marktverfügbarkeit konnte nicht geladen werden. Bitte versuche es erneut.');
                     setLoadingMarkets(false);
                 }
             }
@@ -411,7 +419,9 @@ function MainPage() {
 
                     {/* Content */}
                     <div style={{padding: '25px'}}>
-                        {loadingMarkets ? (
+                        {marketError ? (
+                            <p role="alert">{marketError}</p>
+                        ) : loadingMarkets ? (
                             <div style={{textAlign: 'center', padding: '40px'}}>
                                 <p>Lade Marktdaten...</p>
                             </div>
@@ -550,6 +560,13 @@ function MainPage() {
                 
                 {loading ? (
                     <p>Lade Produkte...</p>
+                ) : productsError ? (
+                    <div role="alert">
+                        <p>{productsError}</p>
+                        <button onClick={loadProducts}>Erneut versuchen</button>
+                    </div>
+                ) : products.length === 0 ? (
+                    <p>Zurzeit sind keine Produkte verfügbar.</p>
                 ) : (
                     <div style={{
                         display: 'grid',
