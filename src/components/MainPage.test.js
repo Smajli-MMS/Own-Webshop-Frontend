@@ -86,3 +86,22 @@ test('the market modal loads availability through the same backend connection', 
         'http://localhost:8081/api/markets/products/1002', expect.objectContaining({ method: 'GET' })
     );
 });
+
+test('the screenshot products use their photos in both the listing and details', async () => {
+    const screenshotProducts = [
+        { productId: 115, name: 'MacBook Pro M3', productGroupId: 0, price: 1999.99 },
+        { productId: 848, name: 'Nokia 6210', productGroupId: 0, price: 50.99 },
+        { productId: 849, name: 'Iphone 15 Pro', productGroupId: 0, price: 599.99 }
+    ];
+    global.fetch.mockResolvedValue(jsonResponse(screenshotProducts));
+    render(<MainPage />);
+    await screen.findByRole('heading', { name: 'MacBook Pro M3' });
+    expect(screen.getByAltText('MacBook Pro M3')).toHaveAttribute('src', 'macbook.jpg');
+    expect(screen.getByAltText('Nokia 6210')).toHaveAttribute('src', 'nokia.jpg');
+    expect(screen.getByAltText('Iphone 15 Pro')).toHaveAttribute('src', 'iphone.jpg');
+    fireEvent.click(screen.getAllByRole('button', { name: /Details anzeigen/ })[0]);
+    expect(screen.getAllByAltText('MacBook Pro M3')).toHaveLength(2);
+    screen.getAllByAltText('MacBook Pro M3').forEach(img => {
+        expect(img).toHaveAttribute('src', 'macbook.jpg');
+    });
+});

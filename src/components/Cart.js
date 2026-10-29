@@ -3,23 +3,7 @@ import { useState } from 'react';
 import { useCart } from './CartContext';
 import Checkout from './Checkout';
 
-// Importiere alle Bilder
-import iphoneImg from '../images/iphone.jpg';
-import samsungImg from '../images/samsung.jpg';
-import sonyImg from '../images/sony.jpg';
-import xiaomiImg from '../images/xiaomi.jpg';
-import oneplusImg from '../images/oneplus.jpg';
-import nintendoImg from '../images/nintendo.jpg';
-import dellImg from '../images/dell.jpg';
-import hpImg from '../images/hp.jpg';
-import mieleImg from '../images/miele.jpg';
-import lgImg from '../images/lg.jpg';
-import logitechImg from '../images/logitech.jpg';
-import nokiaImg from '../images/nokia.jpg';
-import boschImg from '../images/bosch.jpg';
-import playstationImg from '../images/playstation.jpg';
-import xboxImg from '../images/xbox.jpg';
-import macbookImg from '../images/macbook.jpg';
+import { getProductImage, handleProductImageError } from '../utils/productImages';
 
 function Cart({ onClose }) {
     const { 
@@ -36,69 +20,6 @@ function Cart({ onClose }) {
 
     const [showConfirmClear, setShowConfirmClear] = useState(false);
     const [animatingItems, setAnimatingItems] = useState(new Set());
-
-    // Image-Mapping basierend auf Produktnamen oder IDs
-    const getProductImage = (product) => {
-        const productName = product.name?.toLowerCase() || '';
-        const productId = product.productId?.toString() || '';
-        
-        // Mapping basierend auf Produktnamen
-        if (productName.includes('iphone') || productName.includes('apple')) {
-            return iphoneImg;
-        } else if (productName.includes('samsung')) {
-            return samsungImg;
-        } else if (productName.includes('sony')) {
-            return sonyImg;
-        } else if (productName.includes('xiaomi')) {
-            return xiaomiImg;
-        } else if (productName.includes('oneplus') || productName.includes('one plus')) {
-            return oneplusImg;
-        } else if (productName.includes('nintendo')) {
-            return nintendoImg;
-        } else if (productName.includes('dell')) {
-            return dellImg;
-        } else if (productName.includes('hp')) {
-            return hpImg;
-        } else if (productName.includes('miele')) {
-            return mieleImg;
-        } else if (productName.includes('lg')) {
-            return lgImg;
-        } else if (productName.includes('logitech')) {
-            return logitechImg;
-        } else if (productName.includes('nokia')) {
-            return nokiaImg;
-        } else if (productName.includes('bosch')) {
-            return boschImg;
-        } else if (productName.includes('playstation') || productName.includes('ps5') || productName.includes('ps4')) {
-            return playstationImg;
-        } else if (productName.includes('xbox')) {
-            return xboxImg;
-        } else if (productName.includes('macbook') || productName.includes('mac')) {
-            return macbookImg;
-        }
-        
-        // Fallback: Mapping basierend auf Produkt-ID
-        const imageMap = {
-            '1': iphoneImg,
-            '2': samsungImg,
-            '3': sonyImg,
-            '4': xiaomiImg,
-            '5': oneplusImg,
-            '6': nintendoImg,
-            '7': dellImg,
-            '8': hpImg,
-            '9': mieleImg,
-            '10': lgImg,
-            '11': logitechImg,
-            '12': nokiaImg,
-            '13': boschImg,
-            '14': playstationImg,
-            '15': xboxImg,
-            '16': macbookImg
-        };
-        
-        return imageMap[productId] || null;
-    };
 
     if (isCheckingOut) {
         return <Checkout onClose={onClose} />;
@@ -651,6 +572,7 @@ function Cart({ onClose }) {
                                         <img 
                                             src={productImage}
                                             alt={item.name}
+                                            onError={handleProductImageError}
                                             style={styles.productImage}
                                             className="product-image"
                                         />
