@@ -1,0 +1,48 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Typprüfung, Tests und Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Node.js 22 einrichten
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Abhängigkeiten aus Lockfile installieren
+        run: npm ci
+
+      - name: TypeScript prüfen
+        run: npm run typecheck
+
+      - name: Tests einmalig ausführen
+        run: npm test -- --watchAll=false --runInBand
+
+      # Generated OpenAPI clients are committed; a live backend is not needed.
+      - name: Produktionsbuild erstellen
+        run: npm run build
