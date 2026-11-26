@@ -94,3 +94,16 @@ test('stock dates remain usable by the overview formatting', async () => {
     const [result] = await stockApi.getAllStock();
     expect(new Date(result.lastChange).getFullYear()).toBe(2026);
 });
+
+test('same-origin build sends API calls to the frontend proxy', async () => {
+    process.env.REACT_APP_API_URL = '/';
+    let configured;
+    jest.isolateModules(() => {
+        configured = require('./index');
+    });
+    expect(configured.apiConfiguration.basePath).toBe('');
+    await configured.marketsApi.getAllMarkets();
+    expect(global.fetch).toHaveBeenCalledWith(
+        '/api/markets', expect.objectContaining({ method: 'GET' })
+    );
+});

@@ -1,0 +1,33 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Docker's embedded DNS: resolve again after the backend container changes.
+    resolver 127.0.0.11 valid=10s ipv6=off;
+    set $backend_upstream "${BACKEND_UPSTREAM}";
+
+    location /api/ {
+        # Preserve /api/... including its query string.
+        proxy_pass http://$backend_upstream;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+    }
+
+    location /static/ {
+        try_files $uri =404;
+    }
+
+    # BrowserRouter routes must also work on direct access or browser refresh.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
