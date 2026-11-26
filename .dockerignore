@@ -1,0 +1,6 @@
+# Only the production build and Nginx template belong in the image context.
+**
+!Dockerfile
+!nginx.conf.template
+!build/
+!build/**
